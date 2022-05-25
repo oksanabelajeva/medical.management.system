@@ -7,6 +7,7 @@ import lv.belyaeva.oxana.medical.management.system.business.repository.model.Pat
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -43,6 +44,7 @@ public class PatientServiceImpl implements PatientService {
         return patientMapper.patientDAOToPatient(patientSaved);
     }
 
+    @Cacheable(value = "patientsList")
     @Override
     public List<Patient> findAllPatients() {
         List<PatientDAO> patientDAOList = patientRepository.findAll();
