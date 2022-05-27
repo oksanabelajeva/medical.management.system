@@ -11,7 +11,7 @@ public class CacheEventLogger implements CacheEventListener<Object, Object> {
 
     @Override
     public void onEvent(CacheEvent<? extends Object, ? extends Object> cacheEvent) {
-        LOG.info("Patients' old list = {}, patients' new list = {}", cacheEvent.getOldValue(), cacheEvent.getNewValue());
-
+        LOG.info("Patients' old list = {}, patients' new list = {}",
+                cacheEvent.getOldValue(), cacheEvent.getNewValue());
     }
 }

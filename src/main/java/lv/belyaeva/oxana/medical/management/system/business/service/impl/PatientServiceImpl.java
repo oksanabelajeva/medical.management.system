@@ -7,6 +7,7 @@ import lv.belyaeva.oxana.medical.management.system.business.repository.model.Pat
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PatientServiceImpl implements PatientService {
     @Autowired
     PatientMapper patientMapper;
 
+    @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
     public Patient savePatient(Patient patient) {
         if (!hasNoMatch(patient)) {
