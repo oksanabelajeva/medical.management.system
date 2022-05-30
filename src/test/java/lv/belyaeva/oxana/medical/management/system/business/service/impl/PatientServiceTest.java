@@ -18,10 +18,13 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +41,9 @@ public class PatientServiceTest {
     private PatientServiceImpl patientServiceImplMock;
 
     private Patient patient;
+    private Patient patientDuplicate;
     private PatientDAO patientDAO;
+    private PatientDAO updatedPatientDAO;
     private List<PatientDAO> patientDAOList;
 
     @BeforeEach
@@ -52,10 +57,18 @@ public class PatientServiceTest {
                 "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
+        patientDuplicate = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
+                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
+                "2022-05-27", "2022-06-10", "Flue",
+                "Antibiotics, tea with honey.");
         patientDAO = createPatientDAO(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
+        updatedPatientDAO = createPatientDAO(1L, "John", "Dallas", Enum.valueOf(Gender.class, Gender.MALE.name()),
+                "1985-05-02", "020585-12345", "+37312345678", "London, UK",
+                "2022-05-30", "2022-06-02", "Headache",
+                "Bandage");
         patientDAOList = createPatientListDAO(patientDAO);
     }
 
@@ -78,40 +91,44 @@ public class PatientServiceTest {
 
     @Test
     void savePatientInvalidDuplicateTest() throws Exception {
-        Patient patientSaved = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
-                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
-                "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
         when(patientRepositoryMock.findAll()).thenReturn(patientDAOList);
-        assertThrows(HttpClientErrorException.class, () -> patientServiceImplMock.savePatient(patientSaved));
+        assertThrows(HttpClientErrorException.class, () -> patientServiceImplMock.savePatient(patientDuplicate));
         verify(patientRepositoryMock, times(0)).save(patientDAO);
     }
 
     @Test
-    void updatePatient() throws Exception {
+    void updatePatientAllParametersTest() throws Exception {
+        patient.setName("John");
+        patient.setSurname("Dallas");
+        patient.setGender(Enum.valueOf(Gender.class, Gender.MALE.name()));
+        patient.setDateOfBirth("1985-05-02");
+        patient.setPersonalCode("020585-12345");
+        patient.setPhoneNumber("+37312345678");
+        patient.setResidingAddress("London, UK");
+        patient.setGetToHospitalDate("2022-05-30");
+        patient.setLeaveHospitalDate("2022-06-02");
+        patient.setDiseaseInformation("Headache");
+        patient.setConsumedMedicines("Bandage");
+        patientServiceImplMock.updatePatient(patient);
+        when(patientMapperMock.patientToPatientDAO(patient)).thenReturn(updatedPatientDAO);
+        when(patientRepositoryMock.save(updatedPatientDAO)).thenReturn(updatedPatientDAO);
 
-        when(patientRepositoryMock.save(patientDAO)).thenReturn(patientDAO);
-        when(patientRepositoryMock.findById(1L)).thenReturn(Optional.of(patientDAO));
-
-        Patient patientUpdated = patientServiceImplMock.updatePatient(createPatient(1L, "Laila",
-                "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()), "1980-05-02",
-                "020580-12345", "+37112345678", "Riga, Latvia",
-                "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey."));
-
-        when(patientMapperMock.patientToPatientDAO(patientUpdated)).thenReturn(patientDAO);
-        when(patientMapperMock.patientDAOToPatient(patientDAO)).thenReturn(patientUpdated);
-        when(patientRepositoryMock.save(patientDAO)).thenReturn(patientDAO);
-
-        assertEquals(patientDAO.getName(), patientUpdated.getName());
-        assertEquals(patientDAO.getPatientId(), patientUpdated.getPatientId());
-        verify(patientRepositoryMock, times(1)).save(patientDAO);
-
-////        patientServiceImplMock.updatePatient(patientUpdated);
-//        assertEquals(patientDAO.getName(), patientUpdated.getName());
-//        assertEquals(patientDAO.getPatientId(), patientUpdated.getPatientId());
-//        verify(patientRepositoryMock, times(1)).save(patientDAO);
+        assertEquals(updatedPatientDAO.getName(), patient.getName());
+        assertEquals(updatedPatientDAO.getPatientId(), patient.getPatientId());
     }
+
+//    @Test
+//    void updatePatientByIdNullTest() throws Exception {
+//        patient.setPatientId(null);
+//        patientServiceImplMock.updatePatient(patient);
+//        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.updatePatient(patient));
+//    }
+
+//    @Test
+//    void updatePatientByIdNegativeTest() throws Exception {
+//        patient.setPatientId(-1L);
+//        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.updatePatient(-1L));
+//    }
 
     @Test
     void findAllPatientsTest() throws Exception {
@@ -120,6 +137,40 @@ public class PatientServiceTest {
         List<Patient> patientList = patientServiceImplMock.findAllPatients();
         Assertions.assertEquals(2, patientList.size());
         verify(patientRepositoryMock, times(1)).findAll();
+    }
+
+    @Test
+    void findPatientByIdTest() throws Exception {
+        when(patientRepositoryMock.findById(1L)).thenReturn(Optional.of(patientDAO));
+        when(patientMapperMock.patientDAOToPatient(patientDAO)).thenReturn(patient);
+        Optional<Patient> returnedPatient = patientServiceImplMock.findPatientById(patient.getPatientId());
+        assertEquals(patient.getPatientId(), returnedPatient.get().getPatientId());
+        verify(patientRepositoryMock, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void findPatientByIdInvalidTest() throws Exception {
+        when(patientRepositoryMock.findById(-1L)).thenReturn(Optional.empty());
+        Assertions.assertFalse(patientServiceImplMock.findPatientById(-1L).isPresent());
+        verify(patientRepositoryMock, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void deletePatientByIdTest() {
+        patientServiceImplMock.deletePatientById(1L);
+        verify(patientRepositoryMock, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deletePatientByIdNullTest() throws Exception {
+        doThrow(new NoSuchElementException()).when(patientRepositoryMock).deleteById(null);
+        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.deletePatientById(null));
+    }
+
+    @Test
+    void deletePatientByIdNegativeTest() throws Exception {
+        doThrow(new NoSuchElementException()).when(patientRepositoryMock).deleteById(-1L);
+        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.deletePatientById(-1L));
     }
 
     private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth,

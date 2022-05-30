@@ -1,6 +1,7 @@
 package lv.belyaeva.oxana.medical.management.system.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lv.belyaeva.oxana.medical.management.system.business.repository.PatientRepository;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
 import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,6 +37,8 @@ public class PatientControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private PatientController patientController;
+    @MockBean
+    private PatientRepository patientRepository;
     @MockBean
     private PatientService patientService;
 
@@ -52,7 +56,6 @@ public class PatientControllerTest {
 
     @Test
     void postPatientTest() throws Exception {
-        patient.setPatientId(null);
 
         when(patientService.savePatient(patient)).thenReturn(patient);
 
@@ -236,21 +239,37 @@ public class PatientControllerTest {
         verify(patientService, times(1)).updatePatient(patient);
     }
 
-    @Test
-    void putPatientByIdInvalidTest() throws Exception {
-        patient.setPatientId(null);
-
-        when(patientService.findPatientById(null)).thenReturn(Optional.empty());
-
-        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
-                        .put(URL + "/")
-                        .content(asJsonString(patient))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is4xxClientError());
-
-        verify(patientService, times(0)).updatePatient(patient);
-    }
+//    @Test
+//    void putPatientByIdNullTest() throws Exception {
+//        patient.setPatientId(null);
+//
+//        when(patientService.findPatientById(null)).thenReturn(Optional.empty());
+//
+//        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
+//                        .put(URL + null)
+//                        .content(asJsonString(patient))
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .accept(MediaType.APPLICATION_JSON))
+//                .andExpect(status().is4xxClientError());
+//
+//        verify(patientService, times(0)).updatePatient(patient);
+//    }
+//
+//    @Test
+//    void putPatientByIdNegativeTest() throws Exception {
+//        patient.setPatientId(-1L);
+//
+//        when(patientService.findPatientById(-1L)).thenReturn(Optional.empty());
+//
+//        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
+//                        .put(URL + "/")
+//                        .content(asJsonString(patient))
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .accept(MediaType.APPLICATION_JSON))
+//                .andExpect(status().is4xxClientError());
+//
+//        verify(patientService, times(0)).updatePatient(patient);
+//    }
 
     @Test
     void getAllPatientsTest() throws Exception {
@@ -294,8 +313,78 @@ public class PatientControllerTest {
         verify(patientService, times(1)).findAllPatients();
     }
 
-    //    @GetMapping("/{patientId}")
-    //    @DeleteMapping("/{patientId}")
+    @Test
+    void getPatientByIdTest() throws Exception {
+
+        when(patientService.findPatientById(1L)).thenReturn(Optional.of(patient));
+
+        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .get(URL + "/1"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.patientId").value(1L))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("Karina"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.surname").value("Kidman"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value("FEMALE"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.dateOfBirth").value("1980-05-02"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.personalCode").value("020580-12345"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.phoneNumber").value("+37112345678"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.residingAddress").value("Riga, Latvia"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.getToHospitalDate").value("2022-05-27"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.leaveHospitalDate").value("2022-06-10"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.diseaseInformation").value("Flue"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.consumedMedicines").value("Antibiotics, tea with honey."))
+                .andExpect(status().isOk());
+
+        verify(patientService, times(1)).findPatientById(1L);
+    }
+
+    @Test
+    void getPatientByIdInvalidTest() throws Exception {
+        patient.setPatientId(null);
+
+        when(patientService.findPatientById(null)).thenReturn(Optional.empty());
+
+        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .get(URL + null)
+                        .content(asJsonString(patient))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(patientService, times(0)).findPatientById(null);
+    }
+
+    @Test
+    public void deletePatientByIdTest() throws Exception {
+        when(patientService.findPatientById(1L)).thenReturn(Optional.of(patient));
+
+        this.mockMvc.perform(MockMvcRequestBuilders
+                        .delete(URL + "/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void deletePatientByIdNegativeTest() throws Exception {
+
+        this.mockMvc.perform(MockMvcRequestBuilders
+                        .delete(URL + "/-1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deletePatientByIdNullTest() throws Exception {
+        when(patientRepository.existsById(null)).thenReturn(false);
+
+        this.mockMvc.perform(MockMvcRequestBuilders
+                        .delete(URL + null)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 
     private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
                                   String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
