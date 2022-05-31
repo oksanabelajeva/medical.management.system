@@ -117,19 +117,6 @@ public class PatientServiceTest {
         assertEquals(updatedPatientDAO.getPatientId(), patient.getPatientId());
     }
 
-//    @Test
-//    void updatePatientByIdNullTest() throws Exception {
-//        patient.setPatientId(null);
-//        patientServiceImplMock.updatePatient(patient);
-//        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.updatePatient(patient));
-//    }
-
-//    @Test
-//    void updatePatientByIdNegativeTest() throws Exception {
-//        patient.setPatientId(-1L);
-//        assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.updatePatient(-1L));
-//    }
-
     @Test
     void findAllPatientsTest() throws Exception {
         when(patientRepositoryMock.findAll()).thenReturn(patientDAOList);

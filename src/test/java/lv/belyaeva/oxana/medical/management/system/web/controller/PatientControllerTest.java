@@ -239,37 +239,19 @@ public class PatientControllerTest {
         verify(patientService, times(1)).updatePatient(patient);
     }
 
-//    @Test
-//    void putPatientByIdNullTest() throws Exception {
-//        patient.setPatientId(null);
-//
-//        when(patientService.findPatientById(null)).thenReturn(Optional.empty());
-//
-//        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
-//                        .put(URL + null)
-//                        .content(asJsonString(patient))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().is4xxClientError());
-//
-//        verify(patientService, times(0)).updatePatient(patient);
-//    }
-//
-//    @Test
-//    void putPatientByIdNegativeTest() throws Exception {
-//        patient.setPatientId(-1L);
-//
-//        when(patientService.findPatientById(-1L)).thenReturn(Optional.empty());
-//
-//        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
-//                        .put(URL + "/")
-//                        .content(asJsonString(patient))
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().is4xxClientError());
-//
-//        verify(patientService, times(0)).updatePatient(patient);
-//    }
+    @Test
+    void putPatientByIdNotFoundTest() throws Exception {
+        when(patientService.findPatientById(1L)).thenReturn(Optional.empty());
+
+        ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
+                        .put(URL + "/2")
+                        .content(asJsonString(patient))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(patientService, times(0)).updatePatient(patient);
+    }
 
     @Test
     void getAllPatientsTest() throws Exception {
@@ -339,13 +321,12 @@ public class PatientControllerTest {
     }
 
     @Test
-    void getPatientByIdInvalidTest() throws Exception {
-        patient.setPatientId(null);
+    void getPatientByIdNotFoundTest() throws Exception {
 
-        when(patientService.findPatientById(null)).thenReturn(Optional.empty());
+        when(patientService.findPatientById(1L)).thenReturn(Optional.empty());
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
-                        .get(URL + null)
+                        .get(URL + "/2")
                         .content(asJsonString(patient))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
