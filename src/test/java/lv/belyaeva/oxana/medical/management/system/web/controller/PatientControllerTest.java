@@ -241,7 +241,6 @@ public class PatientControllerTest {
 
     @Test
     void putPatientByIdNotFoundTest() throws Exception {
-        when(patientService.findPatientById(1L)).thenReturn(Optional.empty());
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
                         .put(URL + "/2")
@@ -322,8 +321,6 @@ public class PatientControllerTest {
 
     @Test
     void getPatientByIdNotFoundTest() throws Exception {
-
-        when(patientService.findPatientById(1L)).thenReturn(Optional.empty());
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
                         .get(URL + "/2")
