@@ -39,6 +39,9 @@ public class PatientDAO {
     @Column(name = "date_of_birth")
     private String dateOfBirth;
 
+    @Column(name = "age")
+    private Long age;
+
     @Column(name = "personal_code")
     private String personalCode;
 

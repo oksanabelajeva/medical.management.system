@@ -112,7 +112,8 @@ public class PatientController {
             @ApiResponse(code = 404, message = HTMLResponseMessages.HTTP_404),
             @ApiResponse(code = 500, message = HTMLResponseMessages.HTTP_500)})
     public ResponseEntity<Patient> findPatientById(
-            @ApiParam(value = "id of the patient's record", required = true)
+            @ApiParam(value = "id of the patient's record", allowableValues = DescriptionVariables.MAX_LONG_RANGE,
+                    required = true)
             @NonNull @PathVariable Long patientId) {
         log.info("Find patient's record by passing id of the patient's record" +
                 ", where patient's record id is: {}.", patientId);
@@ -135,7 +136,8 @@ public class PatientController {
             @ApiResponse(code = 500, message = HTMLResponseMessages.HTTP_500)})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deletePatientById(
-            @ApiParam(value = "The id of the patient", required = true)
+            @ApiParam(value = "The id of the patient", allowableValues = DescriptionVariables.MAX_LONG_RANGE,
+                    required = true)
             @NonNull @PathVariable Long patientId) {
         log.info("Delete patient's record by passing id, where id is: {}", patientId);
         Optional<Patient> patient = patientService.findPatientById(patientId);

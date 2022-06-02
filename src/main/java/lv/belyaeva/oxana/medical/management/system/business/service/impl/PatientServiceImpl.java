@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,6 +35,8 @@ public class PatientServiceImpl implements PatientService {
             log.error("Patient conflict exception is thrown: {}", HttpStatus.CONFLICT);
             throw new HttpClientErrorException(HttpStatus.CONFLICT);
         }
+        patient.setAge(Long.valueOf(patient.calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
+                LocalDate.now())));
         PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
         log.info("New patient saved: {}", () -> patientSaved);
         return patientMapper.patientDAOToPatient(patientSaved);
@@ -41,6 +44,8 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Patient updatePatient(Patient patient) {
+        patient.setAge(Long.valueOf(patient.calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
+                LocalDate.now())));
         PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
         log.info("Patient data was updated: {}", () -> patientSaved);
         return patientMapper.patientDAOToPatient(patientSaved);
