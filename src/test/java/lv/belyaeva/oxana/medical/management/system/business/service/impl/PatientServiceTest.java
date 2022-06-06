@@ -47,26 +47,26 @@ public class PatientServiceTest {
     private List<PatientDAO> patientDAOList;
 
     @BeforeEach
-    private void setUp() {
+    private void setUp() throws Exception{
         MockitoAnnotations.openMocks(this);
     }
 
     @BeforeEach
-    public void init() {
+    public void init()  throws Exception {
         patient = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
-                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
+                "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
         patientDuplicate = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
-                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
+                "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
         patientDAO = createPatientDAO(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
-                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
+                "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
         updatedPatientDAO = createPatientDAO(1L, "John", "Dallas", Enum.valueOf(Gender.class, Gender.MALE.name()),
-                "1985-05-02", "020585-12345", "+37312345678", "London, UK",
+                "1985-05-02", 42L, "020585-12345", "+37312345678", "London, UK",
                 "2022-05-30", "2022-06-02", "Headache",
                 "Bandage");
         patientDAOList = createPatientListDAO(patientDAO);
@@ -102,6 +102,7 @@ public class PatientServiceTest {
         patient.setSurname("Dallas");
         patient.setGender(Enum.valueOf(Gender.class, Gender.MALE.name()));
         patient.setDateOfBirth("1985-05-02");
+        patient.setAge(37L);
         patient.setPersonalCode("020585-12345");
         patient.setPhoneNumber("+37312345678");
         patient.setResidingAddress("London, UK");
@@ -160,7 +161,7 @@ public class PatientServiceTest {
         assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.deletePatientById(-1L));
     }
 
-    private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
+    private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth, Long age,
                                   String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
                                   String leaveHospitalDate, String diseaseInformation, String consumedMedicines) {
         Patient patient = new Patient();
@@ -169,6 +170,7 @@ public class PatientServiceTest {
         patient.setSurname(surname);
         patient.setGender(gender);
         patient.setDateOfBirth(dateOfBirth);
+        patient.setAge(age);
         patient.setPersonalCode(personalCode);
         patient.setPhoneNumber(phoneNumber);
         patient.setResidingAddress(residingAddress);
@@ -180,14 +182,16 @@ public class PatientServiceTest {
     }
 
     private PatientDAO createPatientDAO(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
-                                        String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
-                                        String leaveHospitalDate, String diseaseInformation, String consumedMedicines) {
+                                        Long age, String personalCode, String phoneNumber, String residingAddress,
+                                        String getToHospitalDate, String leaveHospitalDate, String diseaseInformation,
+                                        String consumedMedicines) {
         PatientDAO patientDAO = new PatientDAO();
         patientDAO.setPatientId(patientId);
         patientDAO.setName(name);
         patientDAO.setSurname(surname);
         patientDAO.setGender(gender);
         patientDAO.setDateOfBirth(dateOfBirth);
+        patientDAO.setAge(age);
         patientDAO.setPersonalCode(personalCode);
         patientDAO.setPhoneNumber(phoneNumber);
         patientDAO.setResidingAddress(residingAddress);

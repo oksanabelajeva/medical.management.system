@@ -46,9 +46,9 @@ public class PatientControllerTest {
     private List<Patient> patientList;
 
     @BeforeEach
-    public void init() {
+    public void init()  throws Exception {
         patient = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
-                "1980-05-02", "020580-12345", "+37112345678", "Riga, Latvia",
+                "1980-05-02", 42L,"020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
                 "Antibiotics, tea with honey.");
         patientList = createPatientList(patient);
@@ -70,7 +70,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidName() throws Exception {
+    void postPatientInvalidNameTest() throws Exception {
         patient.setName(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -84,7 +84,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidSurname() throws Exception {
+    void postPatientInvalidSurnameTest() throws Exception {
         patient.setSurname(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -98,7 +98,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidGender() throws Exception {
+    void postPatientInvalidGenderTest() throws Exception {
         patient.setGender(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -112,7 +112,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidDateOfBirth() throws Exception {
+    void postPatientInvalidDateOfBirthTest() throws Exception {
         patient.setDateOfBirth(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -126,7 +126,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidPersonalCode() throws Exception {
+    void postPatientInvalidPersonalCodeTest() throws Exception {
         patient.setPersonalCode(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -140,7 +140,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidPhoneNumber() throws Exception {
+    void postPatientInvalidPhoneNumberTest() throws Exception {
         patient.setPhoneNumber(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -154,7 +154,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidResidingAddress() throws Exception {
+    void postPatientInvalidResidingAddressTest() throws Exception {
         patient.setResidingAddress(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -168,7 +168,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidGetToHospitalDate() throws Exception {
+    void postPatientInvalidGetToHospitalDateTest() throws Exception {
         patient.setGetToHospitalDate(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -182,7 +182,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidLeaveHospitalDate() throws Exception {
+    void postPatientInvalidLeaveHospitalDateTest() throws Exception {
         patient.setLeaveHospitalDate(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -196,7 +196,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidDiseaseInformation() throws Exception {
+    void postPatientInvalidDiseaseInformationTest() throws Exception {
         patient.setDiseaseInformation(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -210,7 +210,7 @@ public class PatientControllerTest {
     }
 
     @Test
-    void postPatientTestInvalidConsumedMedicines() throws Exception {
+    void postPatientInvalidConsumedMedicinesTest() throws Exception {
         patient.setConsumedMedicines(null);
 
         ResultActions mvcResult = mockMvc.perform(MockMvcRequestBuilders
@@ -266,6 +266,7 @@ public class PatientControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].surname").value("Kidman"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].gender").value("FEMALE"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].dateOfBirth").value("1980-05-02"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(42L))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].personalCode").value("020580-12345"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].phoneNumber").value("+37112345678"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].residingAddress").value("Riga, Latvia"))
@@ -307,6 +308,7 @@ public class PatientControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.surname").value("Kidman"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.gender").value("FEMALE"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.dateOfBirth").value("1980-05-02"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(42L))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.personalCode").value("020580-12345"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.phoneNumber").value("+37112345678"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.residingAddress").value("Riga, Latvia"))
@@ -364,7 +366,7 @@ public class PatientControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
+    private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth, Long age,
                                   String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
                                   String leaveHospitalDate, String diseaseInformation, String consumedMedicines) {
         Patient patient = new Patient();
@@ -373,6 +375,7 @@ public class PatientControllerTest {
         patient.setSurname(surname);
         patient.setGender(gender);
         patient.setDateOfBirth(dateOfBirth);
+        patient.setAge(age);
         patient.setPersonalCode(personalCode);
         patient.setPhoneNumber(phoneNumber);
         patient.setResidingAddress(residingAddress);

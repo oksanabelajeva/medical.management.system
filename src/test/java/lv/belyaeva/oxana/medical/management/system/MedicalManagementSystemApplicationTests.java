@@ -7,7 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 class MedicalManagementSystemApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void applicationStarts() {
+		MedicalManagementSystemApplication.main(new String[] {});
 	}
 
 }

@@ -1,6 +1,5 @@
 package lv.belyaeva.oxana.medical.management.system.business.repository.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lv.belyaeva.oxana.medical.management.system.model.Gender;
@@ -18,7 +17,6 @@ import javax.persistence.Table;
 @Table(name = "patient")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class PatientDAO {
 
     @Id
@@ -62,8 +60,4 @@ public class PatientDAO {
 
     @Column(name = "consumed_medicines")
     private String consumedMedicines;
-
-    public PatientDAO(Long patientId) {
-        this.patientId = patientId;
-    }
 }
