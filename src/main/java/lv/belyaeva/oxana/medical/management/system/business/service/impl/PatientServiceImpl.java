@@ -77,8 +77,8 @@ public class PatientServiceImpl implements PatientService {
 
     public boolean hasNoMatch(Patient patient) {
         return patientRepository.findAll().stream()
-                .noneMatch(patientDAO -> patientDAO.getName().equals(patient.getName())
-                        && patientDAO.getSurname().equals(patient.getSurname())
+                .noneMatch(patientDAO -> patientDAO.getName().equalsIgnoreCase(patient.getName())
+                        && patientDAO.getSurname().equalsIgnoreCase(patient.getSurname())
                         && patientDAO.getPersonalCode().equals(patient.getPersonalCode())
                         && patientDAO.getDateOfBirth().equals(patient.getDateOfBirth()));
     }
