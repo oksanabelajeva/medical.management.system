@@ -7,9 +7,9 @@ import java.util.Optional;
 
 public interface PatientService {
 
-    Patient savePatient(Patient patient);
+    Patient savePatient(Patient patient) throws Exception;
 
-    Patient updatePatient(Patient patient);
+    Patient updatePatient(Patient patient) throws Exception;
 
     List<Patient> findAllPatients();
 

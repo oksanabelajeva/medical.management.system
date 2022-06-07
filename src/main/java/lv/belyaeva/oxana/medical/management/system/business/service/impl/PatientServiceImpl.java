@@ -1,12 +1,12 @@
 package lv.belyaeva.oxana.medical.management.system.business.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lv.belyaeva.oxana.medical.management.system.business.mapper.PatientMapper;
 import lv.belyaeva.oxana.medical.management.system.business.repository.PatientRepository;
 import lv.belyaeva.oxana.medical.management.system.business.repository.model.PatientDAO;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -15,38 +15,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
 
-    @Autowired
-    PatientRepository patientRepository;
+    private final PatientRepository patientRepository;
 
-    @Autowired
-    PatientMapper patientMapper;
+    private final PatientMapper patientMapper;
+
+    private final Patient patient;
 
     @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
-    public Patient savePatient(Patient patient) {
+    public Patient savePatient(Patient patient) throws Exception {
         if (!hasNoMatch(patient)) {
             log.error("Patient conflict exception is thrown: {}", HttpStatus.CONFLICT);
             throw new HttpClientErrorException(HttpStatus.CONFLICT);
         }
-        patient.setAge(Long.valueOf(patient.calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
-                LocalDate.now())));
+        checkIfCurrentDateIsBeforeDateOfBirth(LocalDate.parse(patient.getDateOfBirth()), LocalDate.now());
+        patient.setAge((long) calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
+                LocalDate.now()));
         PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
         log.info("New patient saved: {}", () -> patientSaved);
         return patientMapper.patientDAOToPatient(patientSaved);
     }
 
+    @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
-    public Patient updatePatient(Patient patient) {
-        patient.setAge(Long.valueOf(patient.calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
-                LocalDate.now())));
+    public Patient updatePatient(Patient patient) throws Exception {
+        checkIfCurrentDateIsBeforeDateOfBirth(LocalDate.parse(patient.getDateOfBirth()), LocalDate.now());
+        patient.setAge((long) calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
+                LocalDate.now()));
         PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
         log.info("Patient data was updated: {}", () -> patientSaved);
         return patientMapper.patientDAOToPatient(patientSaved);
@@ -69,6 +74,7 @@ public class PatientServiceImpl implements PatientService {
         return patientById;
     }
 
+    @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
     public void deletePatientById(Long patientId) {
         patientRepository.deleteById(patientId);
@@ -81,5 +87,16 @@ public class PatientServiceImpl implements PatientService {
                         && patientDAO.getSurname().equalsIgnoreCase(patient.getSurname())
                         && patientDAO.getPersonalCode().equals(patient.getPersonalCode())
                         && patientDAO.getDateOfBirth().equals(patient.getDateOfBirth()));
+    }
+
+    static void checkIfCurrentDateIsBeforeDateOfBirth(LocalDate dateOfBirth, LocalDate currentDate) throws Exception {
+        if (currentDate.isBefore(dateOfBirth)) {
+            throw new Exception ("Please insert valid date of birth, the patient is not born yet.");
+        }
+    }
+
+    public int calculateAgeOfThePatient(LocalDate dateOfBirth, LocalDate currentDate) {
+        Period calculateAgeOfThePatient = Period.between(dateOfBirth, currentDate);
+        return calculateAgeOfThePatient.getYears();
     }
 }

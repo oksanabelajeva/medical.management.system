@@ -5,12 +5,12 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import lv.belyaeva.oxana.medical.management.system.swagger.DescriptionVariables;
 import lv.belyaeva.oxana.medical.management.system.swagger.HTMLResponseMessages;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -33,13 +33,13 @@ import java.util.Optional;
 @Log4j2
 @RestController
 @RequestMapping("/api/v1/patient")
+@RequiredArgsConstructor
 public class PatientController {
 
-    @Autowired
-    PatientService patientService;
+    private final PatientService patientService;
 
     @PostMapping
-    @ApiOperation(value = "Saves the patient in database",
+    @ApiOperation(value = "Saves the patient in database.",
             notes = "If provided valid patient's data, saves it",
             response = Patient.class)
     @ApiResponses(value = {
@@ -73,7 +73,7 @@ public class PatientController {
     public ResponseEntity<Patient> updatePatientById(
             @ApiParam(value = "id of the patient", required = true)
             @PathVariable @NonNull Long patientId,
-            @Valid @RequestBody Patient updatedPatient, BindingResult bindingResult) {
+            @Valid @RequestBody Patient updatedPatient, BindingResult bindingResult) throws Exception {
         log.info("Update existing patient with id: {} and new body: {}", patientId, updatedPatient);
         if (bindingResult.hasErrors() || !patientId.equals(updatedPatient.getPatientId())) {
             log.warn("Patient for update with id {} not found", patientId);
@@ -85,7 +85,7 @@ public class PatientController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Finds all patients",
+    @ApiOperation(value = "Finds all patients.",
             notes = "Returns the entire list of patients",
             response = Patient.class, responseContainer = "List")
     @ApiResponses(value = {

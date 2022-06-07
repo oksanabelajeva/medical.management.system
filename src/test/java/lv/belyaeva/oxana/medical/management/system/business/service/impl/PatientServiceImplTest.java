@@ -10,12 +10,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,11 +33,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
-public class PatientServiceTest {
+public class PatientServiceImplTest {
 
-    @Mock
+    @Spy
     private PatientRepository patientRepositoryMock;
-    @Mock
+    @Spy
     private PatientMapper patientMapperMock;
     @InjectMocks
     private PatientServiceImpl patientServiceImplMock;
@@ -47,12 +49,12 @@ public class PatientServiceTest {
     private List<PatientDAO> patientDAOList;
 
     @BeforeEach
-    private void setUp() throws Exception{
+    private void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
     }
 
     @BeforeEach
-    public void init()  throws Exception {
+    public void init() throws Exception {
         patient = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
@@ -159,6 +161,37 @@ public class PatientServiceTest {
     void deletePatientByIdNegativeTest() throws Exception {
         doThrow(new NoSuchElementException()).when(patientRepositoryMock).deleteById(-1L);
         assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.deletePatientById(-1L));
+    }
+
+    @Test
+    void checkIfCurrentDateIsBeforeDateOfBirth() {
+        try {
+            LocalDate dateOfBirthAfterCurrentDate = LocalDate.of(2023, 1, 1);
+            LocalDate currentDate = LocalDate.now();
+            patientServiceImplMock.checkIfCurrentDateIsBeforeDateOfBirth(dateOfBirthAfterCurrentDate, currentDate);
+        } catch (Exception exception) {
+            assertEquals("Please insert valid date of birth, the patient is not born yet.", exception.getMessage());
+        }
+    }
+
+    @Test
+    void calculateAgeOfThePatientTest() {
+        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2020, 1, 1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDateOfBirthBeforeCurrentDate = dateOfBirthBeforeCurrentDate.format(formatter);
+        patient.setDateOfBirth(formattedDateOfBirthBeforeCurrentDate);
+        Assertions.assertEquals(2, patientServiceImplMock.calculateAgeOfThePatient(dateOfBirthBeforeCurrentDate,
+                LocalDate.now()));
+    }
+
+    @Test
+    void calculateInvalidAgeOfThePatientTest() {
+        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2025, 1, 1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String formattedDateOfBirthBeforeCurrentDate = dateOfBirthBeforeCurrentDate.format(formatter);
+        patient.setDateOfBirth(formattedDateOfBirthBeforeCurrentDate);
+        Assertions.assertEquals(-2, patientServiceImplMock.calculateAgeOfThePatient(dateOfBirthBeforeCurrentDate,
+                LocalDate.now()));
     }
 
     private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth, Long age,

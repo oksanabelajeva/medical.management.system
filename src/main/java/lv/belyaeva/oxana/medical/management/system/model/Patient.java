@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.Period;
 
 @ApiModel(description = "Model of patient")
 @Component
@@ -84,13 +82,4 @@ public class Patient implements Serializable {
     @NotNull
     @NotEmpty
     private String consumedMedicines;
-
-    public int calculateAgeOfThePatient(LocalDate dateOfBirth, LocalDate currentDate) {
-        Period calculateAgeOfThePatient = Period.between(dateOfBirth, currentDate);
-        if (calculateAgeOfThePatient.getYears() >= 0) {
-            return calculateAgeOfThePatient.getYears();
-        } else {
-            return 0;
-        }
-    }
 }
