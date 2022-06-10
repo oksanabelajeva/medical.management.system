@@ -23,11 +23,11 @@ class PatientMapperTest {
         patient = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
+                "Antibiotics, tea with honey.", "");
         patientDAO = createPatientDAO(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
+                "Antibiotics, tea with honey.", "");
     }
 
     @Test
@@ -46,6 +46,7 @@ class PatientMapperTest {
         assertEquals(patientDAO.getLeaveHospitalDate(), patient.getLeaveHospitalDate());
         assertEquals(patientDAO.getDiseaseInformation(), patient.getDiseaseInformation());
         assertEquals(patientDAO.getConsumedMedicines(), patient.getConsumedMedicines());
+        assertEquals(patientDAO.getWarningInformation(), patient.getWarningInformation());
     }
 
     @Test
@@ -71,6 +72,7 @@ class PatientMapperTest {
         assertEquals(patient.getLeaveHospitalDate(), patientDAO.getLeaveHospitalDate());
         assertEquals(patient.getDiseaseInformation(), patientDAO.getDiseaseInformation());
         assertEquals(patient.getConsumedMedicines(), patientDAO.getConsumedMedicines());
+        assertEquals(patient.getWarningInformation(), patientDAO.getWarningInformation());
     }
 
     @Test
@@ -82,7 +84,8 @@ class PatientMapperTest {
 
     private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth, Long age,
                                   String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
-                                  String leaveHospitalDate, String diseaseInformation, String consumedMedicines) {
+                                  String leaveHospitalDate, String diseaseInformation, String consumedMedicines,
+                                  String warningInformation) {
         Patient patient = new Patient();
         patient.setPatientId(patientId);
         patient.setName(name);
@@ -97,13 +100,14 @@ class PatientMapperTest {
         patient.setLeaveHospitalDate(leaveHospitalDate);
         patient.setDiseaseInformation(diseaseInformation);
         patient.setConsumedMedicines(consumedMedicines);
+        patient.setWarningInformation(warningInformation);
         return patient;
     }
 
     private PatientDAO createPatientDAO(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
                                         Long age, String personalCode, String phoneNumber, String residingAddress,
                                         String getToHospitalDate, String leaveHospitalDate, String diseaseInformation,
-                                        String consumedMedicines) {
+                                        String consumedMedicines, String warningInformation) {
         PatientDAO patientDAO = new PatientDAO();
         patientDAO.setPatientId(patientId);
         patientDAO.setName(name);
@@ -118,6 +122,7 @@ class PatientMapperTest {
         patientDAO.setLeaveHospitalDate(leaveHospitalDate);
         patientDAO.setDiseaseInformation(diseaseInformation);
         patientDAO.setConsumedMedicines(consumedMedicines);
+        patientDAO.setWarningInformation(warningInformation);
         return patientDAO;
     }
 }

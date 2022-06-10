@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lv.belyaeva.oxana.medical.management.system.swagger.DescriptionVariables;
+import lv.belyaeva.oxana.medical.management.system.config.swagger.DescriptionVariables;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotEmpty;
@@ -82,4 +82,7 @@ public class Patient implements Serializable {
     @NotNull
     @NotEmpty
     private String consumedMedicines;
+
+    @ApiModelProperty(notes = "Warning according to age")
+    private String warningInformation;
 }

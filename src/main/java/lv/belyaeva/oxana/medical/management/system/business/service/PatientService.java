@@ -1,5 +1,6 @@
 package lv.belyaeva.oxana.medical.management.system.business.service;
 
+import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public interface PatientService {
     List<Patient> findAllPatients();
 
     Optional<Patient> findPatientById(Long patientId);
+
+    List<Patient> findAllPatientsByGender(Gender gender);
 
     void deletePatientById(Long patientId);
 }

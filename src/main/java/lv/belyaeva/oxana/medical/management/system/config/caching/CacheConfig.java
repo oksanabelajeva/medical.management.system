@@ -1,9 +1,9 @@
-package lv.belyaeva.oxana.medical.management.system.caching;
+package lv.belyaeva.oxana.medical.management.system.config.caching;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableCaching
-public class CacheConfiguration {
+public class CacheConfig {
 }

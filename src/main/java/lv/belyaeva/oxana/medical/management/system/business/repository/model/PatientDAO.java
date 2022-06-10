@@ -60,4 +60,7 @@ public class PatientDAO {
 
     @Column(name = "consumed_medicines")
     private String consumedMedicines;
+
+    @Column(name = "warning_information")
+    private String warningInformation;
 }

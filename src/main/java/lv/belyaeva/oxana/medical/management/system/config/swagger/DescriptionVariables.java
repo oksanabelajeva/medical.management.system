@@ -1,4 +1,4 @@
-package lv.belyaeva.oxana.medical.management.system.swagger;
+package lv.belyaeva.oxana.medical.management.system.config.swagger;
 
 public class DescriptionVariables {
 

@@ -19,12 +19,14 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -58,19 +60,19 @@ public class PatientServiceImplTest {
         patient = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
+                "Antibiotics, tea with honey.", "");
         patientDuplicate = createPatient(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
+                "Antibiotics, tea with honey.", "");
         patientDAO = createPatientDAO(1L, "Karina", "Kidman", Enum.valueOf(Gender.class, Gender.FEMALE.name()),
                 "1980-05-02", 42L, "020580-12345", "+37112345678", "Riga, Latvia",
                 "2022-05-27", "2022-06-10", "Flue",
-                "Antibiotics, tea with honey.");
+                "Antibiotics, tea with honey.", "");
         updatedPatientDAO = createPatientDAO(1L, "John", "Dallas", Enum.valueOf(Gender.class, Gender.MALE.name()),
                 "1985-05-02", 42L, "020585-12345", "+37312345678", "London, UK",
-                "2022-05-30", "2022-06-02", "Headache",
-                "Bandage");
+                "2022-05-30", "2022-06-02", "Headache", "Bandage",
+                "");
         patientDAOList = createPatientListDAO(patientDAO);
     }
 
@@ -112,6 +114,7 @@ public class PatientServiceImplTest {
         patient.setLeaveHospitalDate("2022-06-02");
         patient.setDiseaseInformation("Headache");
         patient.setConsumedMedicines("Bandage");
+        patient.setConsumedMedicines("Please remember to change bandage.");
         patientServiceImplMock.updatePatient(patient);
         when(patientMapperMock.patientToPatientDAO(patient)).thenReturn(updatedPatientDAO);
         when(patientRepositoryMock.save(updatedPatientDAO)).thenReturn(updatedPatientDAO);
@@ -143,6 +146,22 @@ public class PatientServiceImplTest {
         when(patientRepositoryMock.findById(-1L)).thenReturn(Optional.empty());
         Assertions.assertFalse(patientServiceImplMock.findPatientById(-1L).isPresent());
         verify(patientRepositoryMock, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void findPatientByGenderTest() {
+        when(patientRepositoryMock.findAll()).thenReturn(patientDAOList);
+        when(patientMapperMock.patientDAOToPatient(patientDAO)).thenReturn(patient);
+        List<Patient> patientList = patientServiceImplMock.findAllPatientsByGender(Gender.FEMALE);
+        assertEquals(2, patientList.size());
+        verify(patientRepositoryMock, times(1)).findAll();
+    }
+
+    @Test
+    void findPatientByGenderInvalidTest() {
+        when(patientRepositoryMock.findAll()).thenReturn(Collections.emptyList());
+        assertTrue(patientServiceImplMock.findAllPatientsByGender(Gender.FEMALE).isEmpty());
+        verify(patientRepositoryMock, times(1)).findAll();
     }
 
     @Test
@@ -196,7 +215,8 @@ public class PatientServiceImplTest {
 
     private Patient createPatient(Long patientId, String name, String surname, Gender gender, String dateOfBirth, Long age,
                                   String personalCode, String phoneNumber, String residingAddress, String getToHospitalDate,
-                                  String leaveHospitalDate, String diseaseInformation, String consumedMedicines) {
+                                  String leaveHospitalDate, String diseaseInformation, String consumedMedicines,
+                                  String warningInformation) {
         Patient patient = new Patient();
         patient.setPatientId(patientId);
         patient.setName(name);
@@ -211,13 +231,14 @@ public class PatientServiceImplTest {
         patient.setLeaveHospitalDate(leaveHospitalDate);
         patient.setDiseaseInformation(diseaseInformation);
         patient.setConsumedMedicines(consumedMedicines);
+        patient.setWarningInformation(warningInformation);
         return patient;
     }
 
     private PatientDAO createPatientDAO(Long patientId, String name, String surname, Gender gender, String dateOfBirth,
                                         Long age, String personalCode, String phoneNumber, String residingAddress,
                                         String getToHospitalDate, String leaveHospitalDate, String diseaseInformation,
-                                        String consumedMedicines) {
+                                        String consumedMedicines, String warningInformation) {
         PatientDAO patientDAO = new PatientDAO();
         patientDAO.setPatientId(patientId);
         patientDAO.setName(name);
@@ -232,6 +253,7 @@ public class PatientServiceImplTest {
         patientDAO.setLeaveHospitalDate(leaveHospitalDate);
         patientDAO.setDiseaseInformation(diseaseInformation);
         patientDAO.setConsumedMedicines(consumedMedicines);
+        patientDAO.setWarningInformation(warningInformation);
         return patientDAO;
     }
 

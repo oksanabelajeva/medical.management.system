@@ -1,4 +1,4 @@
-package lv.belyaeva.oxana.medical.management.system.caching;
+package lv.belyaeva.oxana.medical.management.system.config.caching;
 
 import org.ehcache.event.CacheEvent;
 import org.ehcache.event.CacheEventListener;

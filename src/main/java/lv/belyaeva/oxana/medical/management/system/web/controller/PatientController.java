@@ -8,9 +8,14 @@ import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
+import lv.belyaeva.oxana.medical.management.system.config.rules.DroolsConfig;
+import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
-import lv.belyaeva.oxana.medical.management.system.swagger.DescriptionVariables;
-import lv.belyaeva.oxana.medical.management.system.swagger.HTMLResponseMessages;
+import lv.belyaeva.oxana.medical.management.system.config.swagger.DescriptionVariables;
+import lv.belyaeva.oxana.medical.management.system.config.swagger.HTMLResponseMessages;
+import org.kie.api.builder.KieBuilder;
+import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.FactHandle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -38,6 +43,8 @@ public class PatientController {
 
     private final PatientService patientService;
 
+    private final KieSession kieSession;
+
     @PostMapping
     @ApiOperation(value = "Saves the patient in database.",
             notes = "If provided valid patient's data, saves it",
@@ -56,8 +63,11 @@ public class PatientController {
             return ResponseEntity.badRequest().build();
         }
         Patient patientSaved = patientService.savePatient(patient);
-        log.info("New patient is created: {}", patient);
-        return new ResponseEntity<>(patientSaved, HttpStatus.CREATED);
+        kieSession.insert(patientSaved);
+        kieSession.fireAllRules();
+        Patient patientUpdated = patientService.updatePatient(patientSaved);
+        log.info("New patient is created: {}", patientUpdated);
+        return new ResponseEntity<>(patientUpdated, HttpStatus.CREATED);
     }
 
     @PutMapping("/{patientId}")
@@ -80,6 +90,8 @@ public class PatientController {
             return ResponseEntity.notFound().build();
         }
         patientService.updatePatient(updatedPatient);
+        kieSession.insert(updatedPatient);
+        kieSession.fireAllRules();
         log.debug("Patient with id {} is updated: {}", patientId, updatedPatient);
         return new ResponseEntity<>(updatedPatient, HttpStatus.CREATED);
     }
@@ -124,6 +136,29 @@ public class PatientController {
             log.debug("Patient's record with id {} is found: {}.", patientId, patient);
         }
         return patient.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/filteredByGenderList/{gender}")
+    @ApiOperation(
+            value = "Finds the patient's records filtered by gender.",
+            notes = "Provide a gender to search specific patients' records in database.",
+            response = Patient.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = HTMLResponseMessages.HTTP_200),
+            @ApiResponse(code = 404, message = HTMLResponseMessages.HTTP_404),
+            @ApiResponse(code = 500, message = HTMLResponseMessages.HTTP_500)
+    })
+    @ResponseStatus(value = HttpStatus.OK)
+    public ResponseEntity<List<Patient>> getToDoTasksByPriority(
+            @ApiParam(value = "Gender", required = true)
+            @PathVariable("gender") Gender gender) {
+        List<Patient> patientListByGender = patientService.findAllPatientsByGender(gender);
+        if (patientListByGender.isEmpty()) {
+            log.info("Any patient with gender {} is not found. List is empty", gender);
+            return ResponseEntity.notFound().build();
+        }
+        log.info("Patients with gender {} are found. Size = {}", gender, patientListByGender.size());
+        return ResponseEntity.ok().body(patientListByGender);
     }
 
     @DeleteMapping("/{patientId}")

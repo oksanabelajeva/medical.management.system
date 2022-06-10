@@ -1,0 +1,68 @@
+package KieRule;
+
+import lv.belyaeva.oxana.medical.management.system.model.Patient;
+import lv.belyaeva.oxana.medical.management.system.model.Gender;
+
+rule "PatientIsAChildAndAGirl"
+
+when
+patientObject : Patient(gender==Gender.FEMALE && age < 8);
+then
+patientObject.setWarningInformation("There should be smaller dose of medicines for this beautiful girl!");
+end;
+
+rule "PatientIsAChildAndABoy"
+
+when
+patientObject : Patient(gender==Gender.MALE && age < 8);
+then
+patientObject.setWarningInformation("There should be smaller dose of medicines for this beautiful boy.!");
+end;
+
+rule "PatientIsATeenagerAndAGirl"
+
+when
+patientObject : Patient(gender==Gender.FEMALE && age >= 8 && age < 16);
+then
+patientObject.setWarningInformation("Check the dose of medicines! Maybe it should be smaller for this beautiful teenager girl.");
+end;
+
+rule "PatientIsATeenagerAndABoy"
+
+when
+patientObject : Patient(gender==Gender.MALE && age >= 8 && age < 16);
+then
+patientObject.setWarningInformation("Check the dose of medicines! Maybe it should be smaller for this a beautiful teenager boy.");
+end;
+
+rule "PatientIsAMiddleAgeAndAWoman"
+
+when
+patientObject : Patient(gender==Gender.FEMALE && age >=16 && age < 55);
+then
+patientObject.setWarningInformation("");
+end;
+
+rule "PatientIsAMiddleAgeAndAMan"
+
+when
+patientObject : Patient(gender==Gender.MALE && age >=16 && age < 55);
+then
+patientObject.setWarningInformation("");
+end;
+
+rule "PatientIsASeniorAndAWoman"
+
+when
+patientObject : Patient(gender==Gender.FEMALE && age >= 55);
+then
+patientObject.setWarningInformation("Please check the dose of medicines for this beautiful woman as for seniors!");
+end;
+
+rule "PatientIsASeniorAndAMan"
+
+when
+patientObject : Patient(gender==Gender.MALE && age >= 55);
+then
+patientObject.setWarningInformation("Please check the dose of medicines for this beautiful man as for seniors!");
+end;

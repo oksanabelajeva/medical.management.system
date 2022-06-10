@@ -6,6 +6,7 @@ import lv.belyaeva.oxana.medical.management.system.business.mapper.PatientMapper
 import lv.belyaeva.oxana.medical.management.system.business.repository.PatientRepository;
 import lv.belyaeva.oxana.medical.management.system.business.repository.model.PatientDAO;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
+import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -28,8 +29,6 @@ public class PatientServiceImpl implements PatientService {
     private final PatientRepository patientRepository;
 
     private final PatientMapper patientMapper;
-
-    private final Patient patient;
 
     @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
@@ -74,6 +73,17 @@ public class PatientServiceImpl implements PatientService {
         return patientById;
     }
 
+    @Override
+    public List<Patient> findAllPatientsByGender(Gender gender) {
+        List<Patient> patientListSortedByGender = findAllPatients()
+                .stream()
+                .filter(t -> t.getGender().equals(gender))
+                .collect(Collectors.toList());
+        log.info("Patients' list with status {} : {}. List size: {}.",
+                gender, patientListSortedByGender, patientListSortedByGender.size());
+        return patientListSortedByGender;
+    }
+
     @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
     public void deletePatientById(Long patientId) {
@@ -91,7 +101,7 @@ public class PatientServiceImpl implements PatientService {
 
     static void checkIfCurrentDateIsBeforeDateOfBirth(LocalDate dateOfBirth, LocalDate currentDate) throws Exception {
         if (currentDate.isBefore(dateOfBirth)) {
-            throw new Exception ("Please insert valid date of birth, the patient is not born yet.");
+            throw new Exception("Please insert valid date of birth, the patient is not born yet.");
         }
     }
 
