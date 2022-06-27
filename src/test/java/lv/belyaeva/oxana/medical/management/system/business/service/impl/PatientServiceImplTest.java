@@ -150,18 +150,18 @@ public class PatientServiceImplTest {
 
     @Test
     void findPatientByGenderTest() {
-        when(patientRepositoryMock.findAll()).thenReturn(patientDAOList);
+        when(patientRepositoryMock.findAllPatientsByGender(Gender.FEMALE)).thenReturn(patientDAOList);
         when(patientMapperMock.patientDAOToPatient(patientDAO)).thenReturn(patient);
         List<Patient> patientList = patientServiceImplMock.findAllPatientsByGender(Gender.FEMALE);
         assertEquals(2, patientList.size());
-        verify(patientRepositoryMock, times(1)).findAll();
+        verify(patientRepositoryMock, times(1)).findAllPatientsByGender(Gender.FEMALE);
     }
 
     @Test
     void findPatientByGenderInvalidTest() {
-        when(patientRepositoryMock.findAll()).thenReturn(Collections.emptyList());
+        when(patientRepositoryMock.findAllPatientsByGender(Gender.FEMALE)).thenReturn(Collections.emptyList());
         assertTrue(patientServiceImplMock.findAllPatientsByGender(Gender.FEMALE).isEmpty());
-        verify(patientRepositoryMock, times(1)).findAll();
+        verify(patientRepositoryMock, times(1)).findAllPatientsByGender(Gender.FEMALE);
     }
 
     @Test

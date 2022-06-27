@@ -141,24 +141,26 @@ public class PatientController {
     @GetMapping("/filteredByGenderList/{gender}")
     @ApiOperation(
             value = "Finds the patient's records filtered by gender.",
-            notes = "Provide a gender to search specific patients' records in database.",
-            response = Patient.class)
+            notes = "Returns the entire list of patients with a specific gender.",
+            response = Patient.class, responseContainer = "List")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = HTMLResponseMessages.HTTP_200),
+            @ApiResponse(code = 200, message = HTMLResponseMessages.HTTP_200,
+                    response = Patient.class, responseContainer = "List"),
             @ApiResponse(code = 404, message = HTMLResponseMessages.HTTP_404),
             @ApiResponse(code = 500, message = HTMLResponseMessages.HTTP_500)
     })
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<List<Patient>> getToDoTasksByPriority(
+    public ResponseEntity<List<Patient>> findListOfPatientsByGender(
             @ApiParam(value = "Gender", required = true)
             @PathVariable("gender") Gender gender) {
+        log.info("Retrieve list of the patients by gender {}.", gender);
         List<Patient> patientListByGender = patientService.findAllPatientsByGender(gender);
         if (patientListByGender.isEmpty()) {
             log.info("Any patient with gender {} is not found. List is empty", gender);
             return ResponseEntity.notFound().build();
         }
-        log.info("Patients with gender {} are found. Size = {}", gender, patientListByGender.size());
-        return ResponseEntity.ok().body(patientListByGender);
+        log.info("Patients with gender {} are found. Size = {}", patientListByGender::size);
+        return ResponseEntity.ok(patientListByGender);
     }
 
     @DeleteMapping("/{patientId}")

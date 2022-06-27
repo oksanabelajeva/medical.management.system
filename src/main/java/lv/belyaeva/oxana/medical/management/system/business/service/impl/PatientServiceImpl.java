@@ -73,15 +73,11 @@ public class PatientServiceImpl implements PatientService {
         return patientById;
     }
 
+
     @Override
     public List<Patient> findAllPatientsByGender(Gender gender) {
-        List<Patient> patientListSortedByGender = findAllPatients()
-                .stream()
-                .filter(t -> t.getGender().equals(gender))
-                .collect(Collectors.toList());
-        log.info("Patients' list with status {} : {}. List size: {}.",
-                gender, patientListSortedByGender, patientListSortedByGender.size());
-        return patientListSortedByGender;
+        List<PatientDAO> patientDAOListSortedByGender = patientRepository.findAllPatientsByGender(gender);
+        return patientDAOListSortedByGender.stream().map(patientMapper::patientDAOToPatient).collect(Collectors.toList());
     }
 
     @CacheEvict(cacheNames = "patientsList", allEntries = true)
