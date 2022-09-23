@@ -1,8 +1,8 @@
-#localhost:8080/swagger-ui/index.html
-#localhost:8080/h2
+#localhost:8085/swagger-ui/index.html
+#localhost:8085/h2
 
 server:
-  port: '8080'
+  port: '8085'
 spring:
   h2:
     console:
