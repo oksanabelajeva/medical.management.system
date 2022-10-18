@@ -6,18 +6,19 @@ import lv.belyaeva.oxana.medical.management.system.business.mapper.PatientMapper
 import lv.belyaeva.oxana.medical.management.system.business.repository.PatientRepository;
 import lv.belyaeva.oxana.medical.management.system.business.repository.model.PatientDAO;
 import lv.belyaeva.oxana.medical.management.system.business.service.PatientService;
+import lv.belyaeva.oxana.medical.management.system.exception.NoSuchPatientExistsException;
+import lv.belyaeva.oxana.medical.management.system.exception.PatientAlreadyExistsException;
 import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -34,8 +35,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public Patient savePatient(Patient patient) throws Exception {
         if (!hasNoMatch(patient)) {
-            log.error("Patient conflict exception is thrown: {}", HttpStatus.CONFLICT);
-            throw new HttpClientErrorException(HttpStatus.CONFLICT);
+            throw new PatientAlreadyExistsException("The patient already exists!");
         }
         checkIfCurrentDateIsBeforeDateOfBirth(LocalDate.parse(patient.getDateOfBirth()), LocalDate.now());
         patient.setAge((long) calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
@@ -48,12 +48,18 @@ public class PatientServiceImpl implements PatientService {
     @CacheEvict(cacheNames = "patientsList", allEntries = true)
     @Override
     public Patient updatePatient(Patient patient) throws Exception {
-        checkIfCurrentDateIsBeforeDateOfBirth(LocalDate.parse(patient.getDateOfBirth()), LocalDate.now());
-        patient.setAge((long) calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
-                LocalDate.now()));
-        PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
-        log.info("Patient data was updated: {}", () -> patientSaved);
-        return patientMapper.patientDAOToPatient(patientSaved);
+
+        PatientDAO existingPatient = patientRepository.findById(patient.getPatientId()).orElse(null);
+        if (existingPatient == null) {
+            throw new NoSuchPatientExistsException("No such patient exists!");
+        } else {
+            checkIfCurrentDateIsBeforeDateOfBirth(LocalDate.parse(patient.getDateOfBirth()), LocalDate.now());
+            patient.setAge((long) calculateAgeOfThePatient(LocalDate.parse(patient.getDateOfBirth()),
+                    LocalDate.now()));
+            PatientDAO patientSaved = patientRepository.save(patientMapper.patientToPatientDAO(patient));
+            log.info("Patient data was updated: {}", () -> patientSaved);
+            return patientMapper.patientDAOToPatient(patientSaved);
+        }
     }
 
     @Cacheable(value = "patientsList")
@@ -67,8 +73,9 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Optional<Patient> findPatientById(Long patientId) {
-        Optional<Patient> patientById = patientRepository.findById(patientId).flatMap(patient ->
-                Optional.ofNullable(patientMapper.patientDAOToPatient(patient)));
+        Optional<Patient> patientById = Optional.ofNullable(patientRepository.findById(patientId).flatMap(patient ->
+                Optional.ofNullable(patientMapper.patientDAOToPatient(patient))).orElseThrow(() -> new NoSuchElementException(
+                "No patient exists in database with id " + patientId + ".")));
         log.info("Patient with id {} is {}", patientId, patientById);
         return patientById;
     }
