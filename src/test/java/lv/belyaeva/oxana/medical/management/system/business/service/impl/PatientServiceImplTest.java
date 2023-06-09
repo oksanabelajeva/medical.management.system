@@ -3,6 +3,7 @@ package lv.belyaeva.oxana.medical.management.system.business.service.impl;
 import lv.belyaeva.oxana.medical.management.system.business.mapper.PatientMapper;
 import lv.belyaeva.oxana.medical.management.system.business.repository.PatientRepository;
 import lv.belyaeva.oxana.medical.management.system.business.repository.model.PatientDAO;
+import lv.belyaeva.oxana.medical.management.system.exception.PatientAlreadyExistsException;
 import lv.belyaeva.oxana.medical.management.system.model.Gender;
 import lv.belyaeva.oxana.medical.management.system.model.Patient;
 import org.junit.jupiter.api.Assertions;
@@ -14,24 +15,14 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
@@ -96,7 +87,7 @@ public class PatientServiceImplTest {
     @Test
     void savePatientInvalidDuplicateTest() throws Exception {
         when(patientRepositoryMock.findAll()).thenReturn(patientDAOList);
-        assertThrows(HttpClientErrorException.class, () -> patientServiceImplMock.savePatient(patientDuplicate));
+        assertThrows(PatientAlreadyExistsException.class, () -> patientServiceImplMock.savePatient(patientDuplicate));
         verify(patientRepositoryMock, times(0)).save(patientDAO);
     }
 
@@ -115,9 +106,11 @@ public class PatientServiceImplTest {
         patient.setDiseaseInformation("Headache");
         patient.setConsumedMedicines("Bandage");
         patient.setConsumedMedicines("Please remember to change bandage.");
-        patientServiceImplMock.updatePatient(patient);
         when(patientMapperMock.patientToPatientDAO(patient)).thenReturn(updatedPatientDAO);
         when(patientRepositoryMock.save(updatedPatientDAO)).thenReturn(updatedPatientDAO);
+        when(patientRepositoryMock.findById(patient.getPatientId())).thenReturn(Optional.of(patientDAO));
+
+        patientServiceImplMock.updatePatient(patient);
 
         assertEquals(updatedPatientDAO.getName(), patient.getName());
         assertEquals(updatedPatientDAO.getPatientId(), patient.getPatientId());
@@ -144,7 +137,7 @@ public class PatientServiceImplTest {
     @Test
     void findPatientByIdInvalidTest() throws Exception {
         when(patientRepositoryMock.findById(-1L)).thenReturn(Optional.empty());
-        Assertions.assertFalse(patientServiceImplMock.findPatientById(-1L).isPresent());
+        Assertions.assertThrows(NoSuchElementException.class, () -> patientServiceImplMock.findPatientById(-1L));
         verify(patientRepositoryMock, times(1)).findById(anyLong());
     }
 
@@ -195,7 +188,7 @@ public class PatientServiceImplTest {
 
     @Test
     void calculateAgeOfThePatientTest() {
-        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2020, 1, 1);
+        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2020, 12, 1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String formattedDateOfBirthBeforeCurrentDate = dateOfBirthBeforeCurrentDate.format(formatter);
         patient.setDateOfBirth(formattedDateOfBirthBeforeCurrentDate);
@@ -205,7 +198,7 @@ public class PatientServiceImplTest {
 
     @Test
     void calculateInvalidAgeOfThePatientTest() {
-        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2025, 1, 1);
+        LocalDate dateOfBirthBeforeCurrentDate = LocalDate.of(2025, 12, 1);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String formattedDateOfBirthBeforeCurrentDate = dateOfBirthBeforeCurrentDate.format(formatter);
         patient.setDateOfBirth(formattedDateOfBirthBeforeCurrentDate);

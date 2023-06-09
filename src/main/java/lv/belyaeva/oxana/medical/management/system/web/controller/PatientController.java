@@ -56,15 +56,17 @@ public class PatientController {
                                                BindingResult bindingResult) throws Exception {
         log.info("Create new patient by passing : {}", patient);
         if (bindingResult.hasErrors()) {
-            log.error("Patient have an error: {}", bindingResult);
+            log.error("Patient has an error: {}", bindingResult);
             return ResponseEntity.badRequest().build();
         }
         Patient patientSaved = patientService.savePatient(patient);
         kieSession.insert(patientSaved);
         kieSession.fireAllRules();
-        Patient patientUpdated = patientService.updatePatient(patientSaved);
-        log.info("New patient is created: {}", patientUpdated);
-        return new ResponseEntity<>(patientUpdated, HttpStatus.CREATED);
+//        Patient patientUpdated = patientService.updatePatient(patientSaved);
+//        log.info("New patient is created: {}", patientUpdated);
+//        return new ResponseEntity<>(patientUpdated, HttpStatus.CREATED);
+        log.info("New patient is created: {}", patientSaved);
+        return new ResponseEntity<>(patientSaved, HttpStatus.CREATED);
     }
 
     @PutMapping("/{patientId}")
